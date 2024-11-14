@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import axios from 'axios';
 
-const BACKEND_URL = 'http://localhost:5000';
+const BACKEND_URL = 'http://192.168.1.107:5000';
 
 export default function SignUp() {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function SignUp() {
     return emailRegex.test(email);
   };
 
-  // Show password field when valid email is entered
+  // Toggle password field visibility based on email validity
   useEffect(() => {
     if (formData.email && validateEmail(formData.email)) {
       setShowPassword(true);
@@ -59,39 +59,30 @@ export default function SignUp() {
       alert("Please enter your phone number");
       return;
     }
-
-    // If email is provided, validate email and password
-    if (formData.email) {
-      if (!validateEmail(formData.email)) {
-        alert("Please enter a valid email address");
-        return;
-      }
-      if (!formData.password) {
-        alert("Password is required when email is provided");
-        return;
-      }
-    }
-
+  
+    // If email is empty, set it to null
+    const email = formData.email.trim() === "" ? null : formData.email;
+  
+    // If password is empty, set it to null
+    const password = formData.password.trim() === "" ? null : formData.password;
+  
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/auth/signup`, formData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await axios.post(`${BACKEND_URL}/api/auth/signup`, {
+        ...formData,
+        email,  // Pass sanitized email
+        password,  // Pass sanitized password
       });
   
       if (response.status === 200) {
-        // Navigate to the RoleSelection screen after successful signup
         router.push('/auth/RoleSelection');
       } else {
-        // Display the error message using an alert
-        alert(response.data.message || 'Failed to sign up, please try again.');
+        alert(response.data.message || 'Failed to sign up');
       }
     } catch (error) {
       console.error('Error during signup:', error);
-      // Display the error message using an alert
-      alert('An error occurred. Please check your internet connection or try again later.');
+      alert('An error occurred. Please try again.');
     }
-  };
+  };  
 
   return (
     <KeyboardAvoidingView
@@ -114,7 +105,6 @@ export default function SignUp() {
               setFormData((prev) => ({ ...prev, firstName: text }))
             }
           />
-
           <TextInput
             style={[styles.input, styles.nameInput]}
             placeholder="Last name"

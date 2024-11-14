@@ -1,32 +1,21 @@
+// server.js
 const express = require('express');
-const dotenv = require('dotenv');
-const connectDB = require('./config/mongo');
-const userRoutes = require('./routes/userRoutes');
+const bodyParser = require('body-parser');
+const connectDB = require('./config/db');
+require('dotenv').config();
 
-// Load environment variables
-dotenv.config();
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
+// Middleware
+app.use(bodyParser.json());
+
+// Connect to database
 connectDB();
 
-// Initialize Express app
-const app = express();
-app.use(express.json());
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
 
-// Basic health check route (optional for testing)
-app.get('/', (req, res) => {
-  res.send('API is running...');
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-// Define routes
-app.use('/api/users', userRoutes);
-
-// Global error handler (optional for improved debugging)
-app.use((err, req, res, next) => {
-  console.error(`Error: ${err.message}`);
-  res.status(500).json({ message: 'Internal Server Error' });
-});
-
-// Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

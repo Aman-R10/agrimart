@@ -4,6 +4,8 @@
     "slug": "agrimart",
     "version": "1.0.0",
     "orientation": "portrait",
+    "newArchEnabled": true,
+    "reactNativeVersion": "0.76.2",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",

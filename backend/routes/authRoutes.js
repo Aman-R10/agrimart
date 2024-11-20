@@ -1,9 +1,12 @@
-// routes/authRoutes.js
 const express = require('express');
-const router = express.Router();
-const authController = require('../controllers/authController');
+const { signup, selectRole } = require('../controllers/authController');
 
-router.post('/signup', authController.signup);
-router.patch('/update-role/:userId', authController.updateRole);
+const router = express.Router();
+
+// Signup route
+router.post('/signup', signup);
+
+// Role selection route
+router.post('/select-role', selectRole);
 
 module.exports = router;

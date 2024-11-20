@@ -11,6 +11,7 @@ const RootLayout = () => {
           gestureEnabled: false,
         }}
       >
+        {/* These screen paths should match your folder structure */}
         <Stack.Screen name="auth/Login" />
         <Stack.Screen name="auth/SignUp" />
         <Stack.Screen name="auth/RoleSelection" />

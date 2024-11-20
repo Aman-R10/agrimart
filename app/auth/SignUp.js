@@ -1,250 +1,111 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from "react-native";
-import { useRouter } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import axios from 'axios';
+import React, { useState } from "react";
+import { View, TextInput, Button, Alert, StyleSheet } from "react-native";
+import { useDispatch } from "react-redux";
+import { signup } from "../../redux/actions/authActions";
+import { useRouter } from "expo-router"; // Import the useRouter hook
 
-const BACKEND_URL = 'http://192.168.1.107:5000';
+const SignUp = () => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-export default function SignUp() {
-  const router = useRouter();
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    email: "",
-    password: "",
-    role: null,
-  });
+  const dispatch = useDispatch();
+  const router = useRouter(); // Ensure this is correctly configured for navigation
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordVisible, setPasswordVisible] = useState(false);
-
-  // Validate email format
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  // Toggle password field visibility based on email validity
-  useEffect(() => {
-    if (formData.email && validateEmail(formData.email)) {
-      setShowPassword(true);
-    } else {
-      setShowPassword(false);
-      setFormData((prev) => ({ ...prev, password: "" }));
-    }
-  }, [formData.email]);
-
-  const handleSignUp = async () => {
-    // Validate required fields
-    if (!formData.firstName.trim()) {
-      alert("Please enter your first name");
+  const handleSignup = async () => {
+    if (!firstName || !lastName || !phone) {
+      Alert.alert("Error", "First name, last name, and phone are required.");
       return;
     }
-    if (!formData.lastName.trim()) {
-      alert("Please enter your last name");
-      return;
-    }
-    if (!formData.phoneNumber.trim()) {
-      alert("Please enter your phone number");
-      return;
-    }
-  
-    // If email is empty, set it to null
-    const email = formData.email.trim() === "" ? null : formData.email;
-  
-    // If password is empty, set it to null
-    const password = formData.password.trim() === "" ? null : formData.password;
   
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/auth/signup`, {
-        ...formData,
-        email,  // Pass sanitized email
-        password,  // Pass sanitized password
-      });
+      // Dispatch signup action and inspect the response
+      const response = await dispatch(
+        signup({ firstName, lastName, phone, email, password })
+      );
   
-      if (response.status === 200) {
-        router.push('/auth/RoleSelection');
+      // Log the raw response
+      console.log("Raw dispatch response:", response);
+  
+      // Check for the _id field in the user object
+      const userId = response?._id || response?.user?._id; // Fallback for structure variations
+  
+      if (userId) {
+        console.log("Signup successful, navigating to RoleSelection");
+        console.log("User ID:", userId);
+  
+        // Navigate to RoleSelection screen with userId
+        router.push({
+          pathname: "/auth/RoleSelection",
+          params: { userId },
+        });
       } else {
-        alert(response.data.message || 'Failed to sign up');
+        throw new Error("User ID (_id) is missing in the response.");
       }
-    } catch (error) {
-      console.error('Error during signup:', error);
-      alert('An error occurred. Please try again.');
+    } catch (err) {
+      console.error("Signup failed:", err);
+      Alert.alert("Error", err.message);
     }
-  };  
+  };
+  
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.imageContainer}>
-          <MaterialIcons name="person-add" size={100} color="#00C853" />
-        </View>
-
-        <Text style={styles.title}>Sign up</Text>
-
-        <View style={styles.nameContainer}>
-          <TextInput
-            style={[styles.input, styles.nameInput]}
-            placeholder="First name"
-            value={formData.firstName}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, firstName: text }))
-            }
-          />
-          <TextInput
-            style={[styles.input, styles.nameInput]}
-            placeholder="Last name"
-            value={formData.lastName}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, lastName: text }))
-            }
-          />
-        </View>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Phone number"
-          keyboardType="phone-pad"
-          value={formData.phoneNumber}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, phoneNumber: text }))
-          }
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Email (optional)"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={formData.email}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, email: text }))
-          }
-        />
-
-        {showPassword && (
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={[styles.input, styles.passwordInput]}
-              placeholder="Password"
-              secureTextEntry={!passwordVisible}
-              value={formData.password}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, password: text }))
-              }
-            />
-            <TouchableOpacity
-              style={styles.eyeIcon}
-              onPress={() => setPasswordVisible(!passwordVisible)}
-            >
-              <MaterialIcons
-                name={passwordVisible ? "visibility" : "visibility-off"}
-                size={24}
-                color="#666"
-              />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <TouchableOpacity style={styles.signupButton} onPress={handleSignUp}>
-          <Text style={styles.signupButtonText}>Sign Up</Text>
-        </TouchableOpacity>
-
-        <View style={styles.loginContainer}>
-          <Text style={styles.loginText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => router.push("/auth/Login")}>
-            <Text style={styles.loginLink}>Log in</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        placeholder="First Name"
+        value={firstName}
+        onChangeText={setFirstName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Last Name"
+        value={lastName}
+        onChangeText={setLastName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Phone"
+        value={phone}
+        onChangeText={setPhone}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+      <Button title="Sign Up" onPress={handleSignup} />
+    </View>
   );
-}
+};
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 20,
-  },
-  imageContainer: {
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 40,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 30,
-    textAlign: "center",
-  },
-  nameContainer: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 15,
-  },
-  nameInput: {
-    flex: 1,
+    padding: 16,
   },
   input: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  passwordContainer: {
-    position: "relative",
-  },
-  passwordInput: {
-    paddingRight: 50,
-  },
-  eyeIcon: {
-    position: "absolute",
-    right: 15,
-    top: 15,
-  },
-  signupButton: {
-    backgroundColor: "#00C853",
-    borderRadius: 8,
-    padding: 15,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  signupButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  loginContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  loginText: {
-    color: "#666",
-    fontSize: 14,
-  },
-  loginLink: {
-    color: "#00C853",
-    fontSize: 14,
-    fontWeight: "600",
+    width: "100%",
+    marginVertical: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 4,
   },
 });
+
+export default SignUp;

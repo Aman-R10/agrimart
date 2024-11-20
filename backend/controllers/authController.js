@@ -1,53 +1,96 @@
-// authController.js
-const User = require("../models/User"); // Path to your User model
+const User = require("../models/User");
 
-exports.signUp = async (req, res) => {
+// Signup function
+exports.signup = async (req, res) => {
   try {
-    const { firstName, lastName, phoneNumber, email, password, role } = req.body;
+    const { firstName, lastName, phone, email, password } = req.body;
 
-    // Sanitize empty email and password
-    const sanitizedEmail = email.trim() === "" ? null : email;
-    const sanitizedPassword = password.trim() === "" ? null : password;
+    // More robust validation
+    if (!firstName || !lastName || !phone || !email || !password) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
 
-    // Create a new user with sanitized data
-    const newUser = new User({
-      firstName,
-      lastName,
-      phoneNumber,
-      email: sanitizedEmail,
-      password: sanitizedPassword,
-      role,
+    // Additional email and phone validation
+    const phoneRegex = /^[0-9]{10}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ message: "Invalid phone number format." });
+    }
+
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format." });
+    }
+
+    const existingUser = await User.findOne({ 
+      $or: [{ phone }, { email }] 
     });
 
-    await newUser.save();
-    res.status(200).json({ message: "User registered successfully!" });
-  } catch (error) {
-    console.error("Signup error:", error);
-    if (error.code === 11000) {
-      return res.status(400).json({ message: "Duplicate data found" });
+    if (existingUser) {
+      return res.status(400).json({ 
+        message: "Phone number or email already exists." 
+      });
     }
-    res.status(500).json({ message: "Server error during signup" });
+
+    const newUser = new User({ 
+      firstName, 
+      lastName, 
+      phone, 
+      email, 
+      password 
+    });
+
+    const savedUser = await newUser.save();
+    console.log('MongoDB Save Result:', savedUser);
+    res.status(201).json({
+      message: "Signup successful!",
+      user: { 
+        _id: savedUser._id, 
+        firstName: savedUser.firstName, 
+        phone: savedUser.phone 
+      },
+    });    
+  } catch (error) {
+    console.error("Signup Error:", error);
+    res.status(500).json({ 
+      message: "Error registering user", 
+      error: error.message 
+    });
   }
 };
 
-
-// Update Role Controller
-exports.updateRole = async (req, res) => {
-  const { userId } = req.params;
-  const { role } = req.body;
-
-  if (!['buyer', 'seller', 'farmer', 'landowner'].includes(role)) {
-    return res.status(400).json({ message: 'Invalid role selected.' });
-  }
-
+exports.selectRole = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(userId, { role }, { new: true });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
+    const { userId, role } = req.body;
+
+    const validRoles = ["buyer", "seller", "farmer", "landowner"];
+    if (!role || !validRoles.includes(role)) {
+      return res.status(400).json({ message: "Invalid role selected." });
     }
-    res.status(200).json({ message: 'Role updated successfully' });
+
+    const user = await User.findByIdAndUpdate(
+      userId, 
+      { role }, 
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.status(200).json({ 
+      message: "Role selected successfully!", 
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        role: user.role
+      }
+    });
   } catch (error) {
-    console.error('Role update error:', error);
-    res.status(500).json({ message: 'Server error during role update.' });
+    console.error("Role selection error:", error);
+    res.status(500).json({ 
+      message: "Error selecting role", 
+      error: error.message 
+    });
   }
 };

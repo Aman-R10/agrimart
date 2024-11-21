@@ -12,18 +12,22 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     signupRequest: (state) => {
+      console.log("Reducer: signupRequest");
       state.loading = true;
       state.error = null; // Reset error
     },
     signupSuccess: (state, action) => {
+      console.log("Reducer: signupSuccess with payload:", action.payload);
       state.loading = false;
       state.user = action.payload;
     },
     signupFail: (state, action) => {
+      console.error("Reducer: signupFail with error:", action.payload);
       state.loading = false;
       state.error = action.payload;
     },
     roleSelectionSuccess: (state, action) => {
+      console.log("Reducer: roleSelectionSuccess with role:", action.payload);
       state.role = action.payload; // Store selected role
     },
   },

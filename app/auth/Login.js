@@ -19,12 +19,30 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      await AsyncStorage.setItem("userToken", "sample-token");
-      router.replace("/screens/HomeScreen");
+      const response = await fetch("http://192.168.1.101:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        const { role, firstName, lastName } = data;
+  
+        // Save role and other data to AsyncStorage
+        await AsyncStorage.setItem("userRole", role);
+        await AsyncStorage.setItem("userName", `${firstName} ${lastName}`);
+        
+        // Navigate to HomeScreen
+        router.replace("/screens/HomeScreen");
+      } else {
+        console.error("Invalid credentials");
+      }
     } catch (error) {
       console.error("Login error:", error);
     }
   };
+  
 
   return (
     <View style={styles.container}>

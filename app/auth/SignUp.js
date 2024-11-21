@@ -15,27 +15,30 @@ const SignUp = () => {
   const router = useRouter(); // Ensure this is correctly configured for navigation
 
   const handleSignup = async () => {
+    console.log("Signup initiated");
+    console.log("Form data:", { firstName, lastName, phone, email, password });
+
     if (!firstName || !lastName || !phone) {
+      console.warn("Validation failed: Missing required fields");
       Alert.alert("Error", "First name, last name, and phone are required.");
       return;
     }
-  
+
     try {
-      // Dispatch signup action and inspect the response
+      console.log("Dispatching signup action with user data...");
       const response = await dispatch(
         signup({ firstName, lastName, phone, email, password })
       );
-  
-      // Log the raw response
-      console.log("Raw dispatch response:", response);
-  
-      // Check for the _id field in the user object
-      const userId = response?._id || response?.user?._id; // Fallback for structure variations
-  
+
+      console.log("Dispatch response:", response);
+
+      // Check if the response contains the user ID
+      const userId = response?._id;
+
       if (userId) {
         console.log("Signup successful, navigating to RoleSelection");
         console.log("User ID:", userId);
-  
+
         // Navigate to RoleSelection screen with userId
         router.push({
           pathname: "/auth/RoleSelection",
@@ -49,7 +52,6 @@ const SignUp = () => {
       Alert.alert("Error", err.message);
     }
   };
-  
 
   return (
     <View style={styles.container}>
@@ -57,34 +59,50 @@ const SignUp = () => {
         style={styles.input}
         placeholder="First Name"
         value={firstName}
-        onChangeText={setFirstName}
+        onChangeText={(value) => {
+          setFirstName(value);
+        }}
       />
       <TextInput
         style={styles.input}
         placeholder="Last Name"
         value={lastName}
-        onChangeText={setLastName}
+        onChangeText={(value) => {
+          setLastName(value);
+        }}
       />
       <TextInput
         style={styles.input}
         placeholder="Phone"
         value={phone}
-        onChangeText={setPhone}
+        onChangeText={(value) => {
+          setPhone(value);
+        }}
       />
       <TextInput
         style={styles.input}
         placeholder="Email"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(value) => {
+          setEmail(value);
+        }}
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(value) => {
+          setPassword(value);
+        }}
         secureTextEntry
       />
-      <Button title="Sign Up" onPress={handleSignup} />
+      <Button
+        title="Sign Up"
+        onPress={() => {
+          console.log("Sign Up button pressed");
+          handleSignup();
+        }}
+      />
     </View>
   );
 };

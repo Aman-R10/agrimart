@@ -1,71 +1,112 @@
-import React from "react";
+import React from 'react';
 import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
   StatusBar,
-  SafeAreaView,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons"; // Make sure to install this icon library
+} from 'react-native';
+import { FontAwesome, Feather } from '@expo/vector-icons';
 
 const Header = () => {
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#7b9d55" />
-      <View style={styles.header}>
+    <>
+      {/* StatusBar Configuration */}
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
+      <View style={styles.container}>
+        {/* Top Row: Hamburger, Greeting, Bell */}
         <View style={styles.topRow}>
           <TouchableOpacity>
-            <Ionicons name="menu" size={35} color="white" />
+            <Feather name="menu" size={24} color="#333" />
           </TouchableOpacity>
-          <View style={styles.welcomeTextContainer}>
-            <Text style={styles.welcomeText}>Hi Sam...</Text>
-            <Text style={styles.subtitleText}>Enjoy our service</Text>
+          <View style={styles.greetingContainer}>
+            <Text style={styles.greetingText}>Hi Karim! 👋</Text>
+            <Text style={styles.subtitle}>Enjoy our services!</Text>
           </View>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <TouchableOpacity style={{ marginRight: 9 }}>
-              <Ionicons name="language-outline" size={24} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Ionicons name="notifications-outline" size={24} color="white" />
+          <View>
+            <TouchableOpacity style={styles.bellContainer}>
+              <FontAwesome name="bell" size={24} color="green" />
+              <View style={styles.notificationBadge} />
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Search Bar */}
+        <View style={styles.searchRow}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search here..."
+            placeholderTextColor="#A9A9A9"
+          />
+          <TouchableOpacity style={styles.filterButton}>
+            <Feather name="sliders" size={20} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </SafeAreaView>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: '#7b9d55',
-    flex: 0,
-  },
-  header: {
-    backgroundColor: '#7b9d55',
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 50, // Increase this value for more curve
-    borderBottomRightRadius: 30, // Increase this value for more curve
-    marginTop: 60,
+  container: {
+    backgroundColor: 'white',
+    padding: 16,
+    paddingTop: StatusBar.currentHeight || 24, // Dynamic padding for the status bar
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   topRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  welcomeTextContainer: {
-    alignItems: 'left',
+  greetingContainer: {
+    flex: 1,
+    marginLeft: 12,
   },
-  welcomeText: {
-    color: 'white',
+  greetingText: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333',
   },
-  subtitleText: {
-    color: 'white',
-    fontSize: 12,
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  bellContainer: {
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 8,
+    height: 8,
+    backgroundColor: 'red',
+    borderRadius: 4,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 14,
+    color: '#333',
+  },
+  filterButton: {
+    backgroundColor: 'green',
+    marginLeft: 8,
+    padding: 10,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
